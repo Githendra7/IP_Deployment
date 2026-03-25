@@ -1,0 +1,52 @@
+# =====================
+# FRONTEND (Next.js / React)
+# =====================
+node_modules/
+.next/
+out/
+build/
+coverage/
+
+# Yarn / pnpm
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# =====================
+# BACKEND (Python)
+# =====================
+__pycache__/
+*.py[cod]
+*.pyc
+venv/
+.venv/
+env/
+
+# =====================
+# ENV FILES
+# =====================
+.env*
+
+# =====================
+# LOGS & DEBUG
+# =====================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =====================
+# SYSTEM FILES
+# =====================
+.DS_Store
+*.pem
+
+# =====================
+# KEEP IMPORTANT FILES
+# =====================
+!requirements.txt
+!README.md

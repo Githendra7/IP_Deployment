@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+supabase
+langchain
+langchain-groq
+langchain-community
+duckduckgo-search
+langgraph
+PyJWT
+passlib[bcrypt]
+python-multipart
