@@ -5,12 +5,14 @@ from pydantic import BaseModel, Field
 from typing import List, Dict
 
 from app.core.config import settings
-from app.ai.tools.component_search import Hardware_Component_Search
+from app.ai.tools.component_search import Engineering_Research_Scraper
 from app.ai.agents.validators import ValidationResult
 
 class SolutionPrinciple(BaseModel):
-    principle: str = Field(description="A real, physical mechanism combining engineering principles.")
-    description: str = Field(description="Brief explanation of how it satisfies the function.")
+    principle: str = Field(description="The component/mechanism name.")
+    category: str = Field(description="One of: Low-Cost, Mechanical, Electronic, Industrial.")
+    cost_estimate: str = Field(description="Estimated price found during scraping.")
+    description: str = Field(description="Explanation.")
 
 class FunctionSolutionMapping(BaseModel):
     function: str = Field(description="The abstract engineering function.")
@@ -21,15 +23,13 @@ class MorphologicalChart(BaseModel):
 
 # Generator
 generator_llm = ChatGroq(temperature=0.7, model_name="llama-3.3-70b-versatile", groq_api_key=settings.GROQ_API_KEY)
-generator_with_tools = generator_llm.bind_tools([Hardware_Component_Search])
-
+generator_with_tools = generator_llm.bind_tools([Engineering_Research_Scraper])
 generator_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are an Ideation & Systems Engineering Agent specializing in engineering concept generation and morphological analysis. Your task is to convert each MAIN function (Level 1 functions only) from the provided functional decomposition tree into a comprehensive morphological chart by mapping each function to multiple feasible solution principles. The columns must strictly include only the main functional decomposition (Level 1 functions) from the previous phase, and no sub-functions should be used as columns. For every function, generate a minimum of 5 and up to 10 distinct solution principles to maximize design exploration. Each solution must represent a real, implementable principle and must obey fundamental constraints (physical laws for hardware, computational/logical feasibility for software, and system constraints for hybrid systems). Ensure solutions can include mechanical, electrical, thermal, fluidic, digital, algorithmic, or human-interaction principles depending on the nature of the function. Avoid vague or generic terms; instead, use concrete working principles such as kinematic mechanisms, energy conversion methods, sensing principles, actuation methods, data processing methods, control logic, communication protocols, and decision-making strategies. Ensure high diversity by covering multiple domains (mechanical, electrical, software, control systems, data systems, human-system interaction, etc.) and different underlying principles (e.g., electromagnetic, hydraulic, rule-based logic, probabilistic models, feedback control, distributed systems), avoiding redundancy or closely similar options. Do not leave any function unmapped. Present the output strictly as a structured morphological chart where each column represents a main function and contains its corresponding solution principles. Ensure solutions are independent, non-overlapping, and suitable for combination into complete system concepts, while maintaining practical feasibility, scalability, and real-world applicability. Return only the morphological chart without explanations."),
-    ("human", "Functional Tree: {functional_tree}\n\nValidation Feedback (if any): {validation_feedback}\n\nPlease generate the Morphological Chart mapping.")
+    ("system", "You are a Mechatronics Agent. Use 'Engineering_Research_Scraper' with phase='phase2' to find parts and prices. Prioritize specific, tangible hardware: microcontrollers (e.g., ESP32, STM32, Arduino), sensors (e.g., IR, Ultrasonic, Encoder, IMU), and specialized industrial equipment. If the search doesn't return specific prices, estimate based on market averages for that specific component. CRITICAL: You must strictly carry over EVERY SINGLE FUNCTION generated in the Phase 1 Functional Tree into the morphological chart, ensuring there is a 1:1 mapping with different physical implementation methods (solutions). Each solution must include brief technical specs (e.g., voltage, torque, resolution)."),
+    ("human", "Functional Tree: {functional_tree}\nValidation Feedback: {validation_feedback}")
 ])
 
-phase2_generator = generator_prompt | generator_with_tools.with_structured_output(MorphologicalChart)
-
+phase2_generator = generator_prompt | generator_llm.bind_tools([Engineering_Research_Scraper]).with_structured_output(MorphologicalChart)
 # Validator
 validator_llm = ChatGroq(temperature=0.0, model_name="llama-3.1-8b-instant", groq_api_key=settings.GROQ_API_KEY)
 

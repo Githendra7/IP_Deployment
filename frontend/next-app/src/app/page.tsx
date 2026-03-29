@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, FileText, Settings, User, Send, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -58,7 +58,9 @@ export default function Home() {
   return (
     <ProtectedRoute>
       <div className="flex h-screen bg-[#FDFCFB] text-foreground">
-        <Sidebar />
+        <Suspense fallback={<div className="w-72 border-r border-zinc-200 bg-white h-full" />}>
+          <Sidebar />
+        </Suspense>
         {/* Main Content */}
         <main className="flex-1 overflow-auto">
           <div className="max-w-4xl mx-auto p-8 py-16">

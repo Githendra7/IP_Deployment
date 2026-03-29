@@ -367,24 +367,26 @@ function PhasesContent() {
                     >
                         {p3Data ? (
                             <div className="space-y-6 overflow-x-auto">
-                                <div className="min-w-[1000px]">
-                                    <div className="grid grid-cols-[140px_160px_1fr_1fr_1fr_1fr] text-[10px] font-bold uppercase tracking-widest text-zinc-400 border-b border-zinc-100 pb-4 mb-4 px-2">
+                                <div className="min-w-[1240px]">
+                                    <div className="grid grid-cols-[140px_160px_1fr_1fr_1fr_1fr_1.5fr] text-[10px] font-bold uppercase tracking-widest text-zinc-400 border-b border-zinc-100 pb-4 mb-4 px-2">
                                         <div>Function</div>
                                         <div>Alternative</div>
                                         <div>Strength</div>
                                         <div>Weakness</div>
                                         <div>Opportunity</div>
                                         <div>Threat</div>
+                                        <div>Working Plan</div>
                                     </div>
                                     <div className="space-y-4">
                                         {p3Data.map((item: any, i: number) => (
-                                            <div key={i} className="grid grid-cols-[140px_160px_1fr_1fr_1fr_1fr] gap-4 py-4 border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors rounded-xl px-2">
+                                            <div key={i} className="grid grid-cols-[140px_160px_1fr_1fr_1fr_1fr_1.5fr] gap-4 py-4 border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors rounded-xl px-2">
                                                 <div className="text-sm font-bold text-zinc-900 pr-2">{item.function_name || "-"}</div>
                                                 <div className="text-sm font-bold text-zinc-700 pr-2 italic">{item.solution_name || "-"}</div>
                                                 <div className="text-xs text-zinc-600 leading-relaxed bg-emerald-50/30 p-3 rounded-xl border border-emerald-100/50">{item.strength || "-"}</div>
                                                 <div className="text-xs text-zinc-600 leading-relaxed bg-rose-50/30 p-3 rounded-xl border border-rose-100/50">{item.weakness || "-"}</div>
                                                 <div className="text-xs text-zinc-600 leading-relaxed bg-blue-50/30 p-3 rounded-xl border border-blue-100/50">{item.opportunity || "-"}</div>
                                                 <div className="text-xs text-zinc-600 leading-relaxed bg-amber-50/30 p-3 rounded-xl border border-amber-100/50">{item.threat || "-"}</div>
+                                                <div className="text-xs text-zinc-600 leading-relaxed bg-zinc-50/50 p-3 rounded-xl border border-zinc-200/50">{item.working_plan || "-"}</div>
                                             </div>
                                         ))}
                                     </div>

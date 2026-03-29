@@ -1,6 +1,7 @@
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
 import json
+import time
 
 from app.ai.state import EngineeringState
 from app.ai.agents.phase1_functional import phase1_generator, phase1_validator
@@ -63,46 +64,59 @@ def check_validity_phase2(state: EngineeringState):
 
 # --- Phase 3 Nodes ---
 def generate_phase3(state: EngineeringState):
-    all_items = []
-    morph = state.get("morphological_alternatives", {})
-    mappings = morph.get("mappings", [])
-    
-    # Fallback if the dict structure is different
-    if isinstance(morph, list):
-        mappings = morph
-        
-    for mapping in mappings:
-        func_name = mapping.get("function", "")
-        alts = mapping.get("solutions", [])
-        
+    print(f"[Phase 3] Generating risk analysis for: {state.get('problem_statement')}")
+    try:
+        # Check if morphological_alternatives even exists
+        morph = state.get("morphological_alternatives")
+        if not morph or not (morph.get("mappings") or morph.get("mappings") == []):
+            print("[Phase 3 ERROR] morphological_alternatives is empty or missing from state.")
+            return {"risk_checklist": [], "revision_count": 1}
+
         res = phase3_generator.invoke({
             "problem_statement": state.get("problem_statement", ""),
-            "functional_tree": json.dumps(state.get("functional_tree", {})),
-            "function_name": func_name,
-            "alternatives": json.dumps(alts),
-            "validation_feedback": state.get("validation_feedback", "")
+            "morphological_alternatives": json.dumps(morph)
         })
         
-        if res and hasattr(res, 'items'):
-            all_items.extend(res.items)
+        if res and hasattr(res, 'analysis'):
+            # Convert specifically to raw dict list for checkpoint compatibility
+            analysis_data = [item.dict() for item in res.analysis]
+            print(f"[Phase 3] Successfully generated {len(analysis_data)} alternatives.")
+            return {"risk_checklist": analysis_data, "revision_count": 1}
+        else:
+            print("[Phase 3 WARNING] Generator returned None or malformed object.")
+            return {"risk_checklist": [], "revision_count": 1}
             
-    items_dicts = [item.dict() for item in all_items]
-    return {"risk_checklist": {"items": items_dicts}, "revision_count": 1}
+    except Exception as e:
+        print(f"[Phase 3 GENERATE ERROR] {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {"risk_checklist": [], "revision_count": 1}
 
 def validate_phase3(state: EngineeringState):
-    res = phase3_validator.invoke({
-        "morphological_alternatives": json.dumps(state.get("morphological_alternatives", {})),
-        "risk_checklist": json.dumps(state["risk_checklist"])
-    })
-    if res.is_valid:
-        return {"validation_feedback": ""}
-    else:
-        return {"validation_feedback": res.feedback}
+    print("[Phase 3] Validating Risk Analysis...")
+    try:
+        data_to_val = state.get("risk_checklist", [])
+        res = phase3_validator.invoke({
+            "risk_checklist": json.dumps(data_to_val)
+        })
+        if res.is_valid:
+            print("[Phase 3] Validation PASSED.")
+            return {"validation_feedback": ""}
+        else:
+            print(f"[Phase 3] Validation FAILED: {res.feedback}")
+            return {"validation_feedback": res.feedback}
+    except Exception as e:
+        print(f"[Phase 3 VALIDATE ERROR] {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {"validation_feedback": f"Validation system error: {str(e)}"}
 
 def check_validity_phase3(state: EngineeringState):
     if state.get("validation_feedback"):
         if state.get("revision_count", 0) >= 3:
+            print("[Phase 3] Max revisions reached. Ending.")
             return END
+        print(f"[Phase 3] Redoing generation. Count: {state.get('revision_count')}")
         return "generate_phase3"
     return END
 

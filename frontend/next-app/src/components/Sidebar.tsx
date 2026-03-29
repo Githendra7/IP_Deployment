@@ -141,10 +141,10 @@ export function Sidebar() {
             {/* Footer */}
             <div className="p-4 border-t border-zinc-100 mt-auto bg-zinc-50/50">
                 <div className="space-y-1">
-                    <button className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/80 rounded-xl transition-all group">
+                    <Link href="/settings" className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/80 rounded-xl transition-all group border-none bg-transparent cursor-pointer text-left">
                         <Settings className="h-5 w-5 text-zinc-400 group-hover:text-zinc-900" />
                         Settings
-                    </button>
+                    </Link>
                     <button 
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all group"

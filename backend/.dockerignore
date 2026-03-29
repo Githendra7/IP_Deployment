@@ -1,0 +1,45 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+.Python
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Environment files (secrets)
+.env
+.env.*
+
+# Test files
+tests/
+test_*.py
+*_test.py
+fix_test_project.py
+test_db.py
+test_flow.py
+test_phase3.py
+test_risk_direct.py
+test_run_phase.py
+tmp_check_db.py
+req.py
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

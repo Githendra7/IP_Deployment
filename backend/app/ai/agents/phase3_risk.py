@@ -4,37 +4,48 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from typing import List, Dict
 
+from app.ai.tools.component_search import Engineering_Research_Scraper
 from app.core.config import settings
 from app.ai.tools.risk_databases import FMEA_Lookup
 from app.ai.agents.validators import ValidationResult
 
-class SWOTItem(BaseModel):
-    function_name: str = Field(description="The engineering function title from Phase 2.")
-    solution_name: str = Field(description="The specific solution principle name being evaluated.")
-    strength: str = Field(description="A specific engineering strength of this solution.")
-    weakness: str = Field(description="A specific engineering weakness, including its cause and associated trade-off.")
-    opportunity: str = Field(description="A specific technical opportunity for future improvement.")
-    threat: str = Field(description="A specific engineering threat or risk, including its cause and associated trade-off.")
+class RiskItem(BaseModel):
+    risk_category: str = Field(description="Category of the risk (e.g., Mechanical, Electrical, Thermal, Manufacturing, Integration).")
+    cause: str = Field(description="A clear engineering cause for the risk based on physical hardware.")
+    trade_off: str = Field(description="A key engineering trade-off associated with the risk.")
 
-class SWOTAnalysis(BaseModel):
-    analysis: List[SWOTItem] = Field(description="List of engineering SWOT analysis items.")
+class RiskChecklist(BaseModel):
+    risks: List[RiskItem] = Field(description="List of engineering risks and trade-offs.")
+
+class AlternativeSWOT(BaseModel):
+    function_name: str = Field(description="Function name from morphological chart.")
+    solution_name: str = Field(description="Specific alternative name/component.")
+    strength: str = Field(description="Strength of this alternative.")
+    weakness: str = Field(description="Weakness, including rate of equipment, project implementation difficulty, and specific morph chart risks.")
+    opportunity: str = Field(description="Opportunities based on market/social sentiment, or previous historical usage of this method.")
+    threat: str = Field(description="Threats based on Google Patents claims or alternatives.")
+    working_plan: str = Field(description="A depth working plan for implementing this solution, including components, sensors, microcontrollers, and step-by-step assembly/integration.")
+
+class RiskAnalysisList(BaseModel):
+    analysis: List[AlternativeSWOT] = Field(description="List of SWOT analysis for each alternative.")
 
 # Generator
 generator_llm = ChatGroq(temperature=0.7, model_name="llama-3.3-70b-versatile", groq_api_key=settings.GROQ_API_KEY)
+generator_with_tools = generator_llm.bind_tools([Engineering_Research_Scraper])
 
 generator_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are an Engineering Evaluation Agent. Your task is to perform a detailed SWOT analysis for EVERY engineering solution principle generated for the SPECIFIC function provided. Evaluate ALL alternatives for this single function. Each response must contain a complete Strengths, Weaknesses, Opportunities, and Threats assessment for every single alternative. You must not skip any alternatives. Each Weakness and Threat must include a specific engineering cause (e.g. friction, signal noise) and trade-off (e.g. cost vs reliability). Strengths and Opportunities should highlight inherent technical advantages or future potential. Maintain technical depth and avoid business or market considerations. Return a flat list of SWOT assessments for the alternatives provided."),
-    ("human", "Problem Statement: {problem_statement}\nFunctional Context: {functional_tree}\n\nFunction to Evaluate: {function_name}\nAlternatives to Evaluate: {alternatives}\n\nValidation Feedback (if any): {validation_feedback}\n\nPlease generate a SWOT analysis for ALL alternatives under this specific function.")
+    ("system", "You are a Market & Risk Agent. Use 'Engineering_Research_Scraper' with phase='phase3' to check patents, sentiment, and project history. For every single alternative in the morphology, determine its Strength, Weakness (factor in equipment rate and implementation difficulty), Opportunity, Threat, and a **Depth Working Plan**. The Working Plan must be technical and specific to the hardware (microcontrollers, sensors, etc.). Output as a detailed array."),
+    ("human", "Goal: {problem_statement}\nMorphology: {morphological_alternatives}")
 ])
 
-phase3_generator = generator_prompt | generator_llm.with_structured_output(SWOTAnalysis)
 
+phase3_generator = generator_prompt | generator_llm.bind_tools([Engineering_Research_Scraper]).with_structured_output(RiskAnalysisList)
 # Validator
-validator_llm = ChatGroq(temperature=0.0, model_name="llama-3.1-8b-instant", groq_api_key=settings.GROQ_API_KEY)
+validator_llm = ChatGroq(temperature=0.0, model_name="mixtral-8x7b-32768", groq_api_key=settings.GROQ_API_KEY)
 
 validator_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are an Engineering Validator. Evaluate the structured engineering SWOT analysis checklist. You must ensure completeness against the Morphological Chart. Rules to check:\n1) Ensure THERE IS EXACTLY ONE SWOT assessment for EVERY single alternative (solution principle) listed under EVERY function in the Morphological Chart. If any alternative is missing from the SWOT checklist, it is INVALID.\n2) No generic business or market risks (must be engineering specific).\n3) Weakness and Threat must have clear engineering causes and trade-offs.\nIf valid, return is_valid=True and empty feedback. If invalid, return is_valid=False and detail the exact violations including which specific alternatives for which functions are missing."),
-    ("human", "Morphological Chart (Input): {morphological_alternatives}\n\nSWOT Analysis JSON to validate: {risk_checklist}")
+    ("system", "You are an Engineering Validator. Evaluate the Risk Analysis List. Rules to check:\n1) Must map every alternative to the fields function_name, solution_name, strength, weakness, opportunity, threat, and working_plan.\n2) Weakness must cover equipment rates and implementation complexity.\n3) Opportunities must mention historical successes.\n4) working_plan MUST be a detailed, multi-step technical guide for implementing the component.\nIf valid, return is_valid=True and empty feedback. If invalid, return is_valid=False and detail the exact violations."),
+    ("human", "SWOT Analysis JSON to validate: {risk_checklist}")
 ])
 
 phase3_validator = validator_prompt | validator_llm.with_structured_output(ValidationResult)
