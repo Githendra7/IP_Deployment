@@ -21,26 +21,17 @@ pipeline {
                 // This uses the '.env' file you uploaded to Jenkins
                 configFileProvider([configFile(fileId: env.ENV_FILE_ID, variable: 'ENV_FILE')]) {
                     withCredentials([sshUserPrivateKey(credentialsId: env.SSH_KEY_ID, keyFileVariable: 'SSH_KEY')]) {
-                        powershell """
+                        powershell '''
                             # 1. Fix SSH Key Permissions (REQUIRED on Windows)
-                            icacls "%SSH_KEY%" /inheritance:r
-                            icacls "%SSH_KEY%" /grant:r "\$($env:USERNAME):R"
+                            icacls "$env:SSH_KEY" /inheritance:r
+                            icacls "$env:SSH_KEY" /grant:r "$($env:USERNAME):R"
 
                             # 2. Transfer the .env file to the EC2 first
-                            scp -i "%SSH_KEY%" -o StrictHostKeyChecking=no "%ENV_FILE%" ${EC2_USER}@${EC2_IP}:/home/ubuntu/.env
+                            scp -i "$env:SSH_KEY" -o StrictHostKeyChecking=no "$env:ENV_FILE" "$($env:EC2_USER)@$($env:EC2_IP):/home/ubuntu/.env"
 
                             # 3. Run the deployment commands
-                            ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} "
-                                if [ ! -d 'ip-deployment' ]; then
-                                    git clone ${GIT_REPO_URL} ip-deployment
-                                fi
-                                cd ip-deployment && \
-                                git pull origin main && \
-                                cp /home/ubuntu/.env .env && \
-                                cp /home/ubuntu/.env backend/.env && \
-                                docker compose up -d --build
-                            "
-                        """
+                            ssh -i "$env:SSH_KEY" -o StrictHostKeyChecking=no "$($env:EC2_USER)@$($env:EC2_IP)" "if [ ! -d 'ip-deployment' ]; then git clone $($env:GIT_REPO_URL) ip-deployment; fi; cd ip-deployment && git pull origin main && cp /home/ubuntu/.env .env && cp /home/ubuntu/.env backend/.env && docker compose up -d --build"
+                        '''
                     }
                 }
             }
