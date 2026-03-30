@@ -23,8 +23,12 @@ pipeline {
                     withCredentials([sshUserPrivateKey(credentialsId: env.SSH_KEY_ID, keyFileVariable: 'SSH_KEY')]) {
                         powershell '''
                             # 1. Fix SSH Key Permissions (REQUIRED on Windows)
+                            # Get the SID of the current user (Jenkins service account) to avoid name-mapping issues
+                            $sid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+                            
+                            # Remove inheritance and grant read access to the service account
                             icacls "$env:SSH_KEY" /inheritance:r
-                            icacls "$env:SSH_KEY" /grant:r "$($env:USERNAME):R"
+                            icacls "$env:SSH_KEY" /grant:r "*$($sid):R"
 
                             # 2. Transfer the .env file to the EC2 first
                             scp -i "$env:SSH_KEY" -o StrictHostKeyChecking=no "$env:ENV_FILE" "$($env:EC2_USER)@$($env:EC2_IP):/home/ubuntu/.env"
