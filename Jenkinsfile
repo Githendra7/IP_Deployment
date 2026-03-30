@@ -31,8 +31,8 @@ pipeline {
                             scp -i "$env:SSH_KEY" -o StrictHostKeyChecking=no "$env:ENV_FILE" "$($env:EC2_USER)@$($env:EC2_IP):/home/ubuntu/.env"
 
                             # 3. Run the deployment commands
-                            # Added --force-recreate and diagnostics to troubleshoot the persistent 502 error
-                            ssh -i "$env:SSH_KEY" -o StrictHostKeyChecking=no "$($env:EC2_USER)@$($env:EC2_IP)" "if [ ! -d 'ip-deployment' ]; then git clone $($env:GIT_REPO_URL) ip-deployment; fi; cd ip-deployment && git pull origin main && cp /home/ubuntu/.env .env && cp /home/ubuntu/.env backend/.env && docker compose up -d --build --force-recreate && echo '--- Container Status ---' && docker compose ps && echo '--- Nginx Logs ---' && docker compose logs nginx --tail 20 && echo '--- Frontend Logs ---' && docker compose logs frontend --tail 20"
+                            # Increased logging and added 'backend' to capture the 500 error traceback
+                            ssh -i "$env:SSH_KEY" -o StrictHostKeyChecking=no "$($env:EC2_USER)@$($env:EC2_IP)" "if [ ! -d 'ip-deployment' ]; then git clone $($env:GIT_REPO_URL) ip-deployment; fi; cd ip-deployment && git pull origin main && cp /home/ubuntu/.env .env && cp /home/ubuntu/.env backend/.env && docker compose up -d --build --force-recreate && echo '--- Container Status ---' && docker compose ps && echo '--- Backend Logs ---' && docker compose logs backend --tail 100 && echo '--- Nginx Logs ---' && docker compose logs nginx --tail 20"
                         '''
                     }
                 }
