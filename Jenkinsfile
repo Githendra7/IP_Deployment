@@ -20,13 +20,13 @@ pipeline {
             steps {
                 // This uses the '.env' file you uploaded to Jenkins
                 configFileProvider([configFile(fileId: env.ENV_FILE_ID, variable: 'ENV_FILE')]) {
-                    sshagent([env.SSH_KEY_ID]) {
+                    withCredentials([sshUserPrivateKey(credentialsId: env.SSH_KEY_ID, keyFileVariable: 'SSH_KEY')]) {
                         sh """
                             # 1. Transfer the .env file to the EC2 first
-                            scp -o StrictHostKeyChecking=no ${ENV_FILE} ${EC2_USER}@${EC2_IP}:/home/ubuntu/.env
+                            scp -i ${SSH_KEY} -o StrictHostKeyChecking=no ${ENV_FILE} ${EC2_USER}@${EC2_IP}:/home/ubuntu/.env
 
                             # 2. Run the deployment commands
-                            ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} "
+                            ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} "
                                 if [ ! -d 'ip-deployment' ]; then
                                     git clone ${GIT_REPO_URL} ip-deployment
                                 fi
