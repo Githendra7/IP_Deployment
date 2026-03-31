@@ -153,22 +153,24 @@ function PhasesContent() {
             
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pageHeight = pdf.internal.pageSize.getHeight();
-            const imgProps = pdf.getImageProperties(imgData);
+            const pdfHeight = pdf.internal.pageSize.getHeight();
             
+            const imgProps = pdf.getImageProperties(imgData);
             const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
             
             let heightLeft = imgHeight;
             let position = 0;
 
-            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-            heightLeft -= pageHeight;
+            // Add the first page
+            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
+            heightLeft -= pdfHeight;
 
+            // Add subsequent pages if the content is longer than one page
             while (heightLeft > 0) {
-                position = heightLeft - imgHeight; // Shift position up by one page
+                position = heightLeft - imgHeight;
                 pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-                heightLeft -= pageHeight;
+                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
+                heightLeft -= pdfHeight;
             }
 
             pdf.save(`ProtoStruc_Report_${projectId?.substring(0, 8)}.pdf`);
@@ -227,13 +229,13 @@ function PhasesContent() {
 
     return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-[#FDFCFB] pb-24" ref={reportRef}>
+            <div className="min-h-screen bg-background text-foreground pb-24 transition-colors duration-300" ref={reportRef}>
                 {/* Status Cards */}
                 <div className="px-12 py-8 grid grid-cols-1 md:grid-cols-3 gap-6 no-print">
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm"
+                        className="bg-card p-6 rounded-3xl border border-border shadow-sm"
                     >
                         <div className="text-[11px] font-black text-zinc-400 uppercase tracking-widest mb-4">Status</div>
                         <div className="flex items-center gap-3">
@@ -266,7 +268,7 @@ function PhasesContent() {
                     >
                         <div className="text-[11px] font-black text-zinc-400 uppercase tracking-widest mb-4">Created</div>
                         <div className="flex items-center gap-3">
-                            <span className="text-lg font-bold text-zinc-900">{project ? formatDate(project.created_at) : "--/--/----"}</span>
+                            <span className="text-lg font-bold text-foreground">{project ? formatDate(project.created_at) : "--/--/----"}</span>
                         </div>
                     </motion.div>
                 </div>
@@ -287,7 +289,7 @@ function PhasesContent() {
                     >
                         {p1Data ? (
                             <div className="space-y-4">
-                                <div className="grid grid-cols-[80px_1fr] border-b border-zinc-100 text-[10px] font-bold uppercase tracking-widest text-zinc-400 pb-4">
+                                <div className="grid grid-cols-[80px_1fr] border-b border-border text-[10px] font-bold uppercase tracking-widest text-muted-foreground pb-4">
                                     <div className="text-center">#</div>
                                     <div>Functional Requirement</div>
                                 </div>
@@ -296,7 +298,7 @@ function PhasesContent() {
                                         <div key={i} className="grid grid-cols-[80px_1fr] py-6 group">
                                             <div className="text-center text-zinc-300 font-bold">{i + 1}</div>
                                             <div>
-                                                <h4 className="font-bold text-zinc-900 mb-2">{item.function || item.title}</h4>
+                                                <h4 className="font-bold text-foreground mb-2">{item.function || item.title}</h4>
                                                 {(item.sub_functions || item.children) && (
                                                     <div className="pl-4 border-l-2 border-zinc-100 space-y-1">
                                                         {(item.sub_functions || item.children).map((c: any, ci: number) => (
@@ -339,9 +341,9 @@ function PhasesContent() {
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {(item.solutions || item.options || []).map((sol: any, sIdx: number) => (
-                                                <div key={sIdx} className="p-4 rounded-2xl border border-zinc-100 bg-zinc-50/50 hover:border-zinc-900 transition-colors group">
-                                                    <div className="text-sm font-bold text-zinc-900 mb-1">{typeof sol === 'string' ? sol : (sol.principle || sol.name)}</div>
-                                                    <div className="text-[11px] text-zinc-400 leading-relaxed truncate group-hover:whitespace-normal">
+                                                <div key={sIdx} className="p-4 rounded-2xl border border-border bg-muted/20 hover:border-primary transition-colors group">
+                                                    <div className="text-sm font-bold text-foreground mb-1">{typeof sol === 'string' ? sol : (sol.principle || sol.name)}</div>
+                                                    <div className="text-[11px] text-muted-foreground leading-relaxed truncate group-hover:whitespace-normal">
                                                         {typeof sol === 'object' && (sol.description || sol.rationale)}
                                                     </div>
                                                 </div>
@@ -379,14 +381,14 @@ function PhasesContent() {
                                     </div>
                                     <div className="space-y-4">
                                         {p3Data.map((item: any, i: number) => (
-                                            <div key={i} className="grid grid-cols-[140px_160px_1fr_1fr_1fr_1fr_1.5fr] gap-4 py-4 border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors rounded-xl px-2">
-                                                <div className="text-sm font-bold text-zinc-900 pr-2">{item.function_name || "-"}</div>
-                                                <div className="text-sm font-bold text-zinc-700 pr-2 italic">{item.solution_name || "-"}</div>
-                                                <div className="text-xs text-zinc-600 leading-relaxed bg-emerald-50/30 p-3 rounded-xl border border-emerald-100/50">{item.strength || "-"}</div>
-                                                <div className="text-xs text-zinc-600 leading-relaxed bg-rose-50/30 p-3 rounded-xl border border-rose-100/50">{item.weakness || "-"}</div>
-                                                <div className="text-xs text-zinc-600 leading-relaxed bg-blue-50/30 p-3 rounded-xl border border-blue-100/50">{item.opportunity || "-"}</div>
-                                                <div className="text-xs text-zinc-600 leading-relaxed bg-amber-50/30 p-3 rounded-xl border border-amber-100/50">{item.threat || "-"}</div>
-                                                <div className="text-xs text-zinc-600 leading-relaxed bg-zinc-50/50 p-3 rounded-xl border border-zinc-200/50">{item.working_plan || "-"}</div>
+                                            <div key={i} className="grid grid-cols-[140px_160px_1fr_1fr_1fr_1fr_1.5fr] gap-4 py-4 border-b border-border last:border-0 hover:bg-muted/10 transition-colors rounded-xl px-2">
+                                                <div className="text-sm font-bold text-foreground pr-2">{item.function_name || "-"}</div>
+                                                <div className="text-sm font-bold text-muted-foreground pr-2 italic">{item.solution_name || "-"}</div>
+                                                <div className="text-xs text-foreground/80 leading-relaxed bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20">{item.strength || "-"}</div>
+                                                <div className="text-xs text-foreground/80 leading-relaxed bg-rose-500/10 p-3 rounded-xl border border-rose-500/20">{item.weakness || "-"}</div>
+                                                <div className="text-xs text-foreground/80 leading-relaxed bg-blue-500/10 p-3 rounded-xl border border-blue-500/20">{item.opportunity || "-"}</div>
+                                                <div className="text-xs text-foreground/80 leading-relaxed bg-amber-500/10 p-3 rounded-xl border border-amber-500/20">{item.threat || "-"}</div>
+                                                <div className="text-xs text-foreground/80 leading-relaxed bg-muted/20 p-3 rounded-xl border border-border/50">{item.working_plan || "-"}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -441,7 +443,7 @@ function PhasesContent() {
                                     <Button
                                         onClick={handleDownloadReport}
                                         disabled={downloading}
-                                        className="bg-zinc-900 hover:bg-zinc-800 text-white font-black px-12 py-8 rounded-2xl flex items-center gap-4 shadow-xl transition-all active:scale-95 disabled:opacity-50 text-xl"
+                                        className="bg-primary hover:bg-primary/90 text-primary-foreground font-black px-12 py-8 rounded-2xl flex items-center gap-4 shadow-xl transition-all active:scale-95 disabled:opacity-50 text-xl"
                                     >
                                         {downloading ? <Clock className="h-6 w-6 animate-spin" /> : <Download className="h-6 w-6" />}
                                         {downloading ? "Formatting PDF..." : "Generate Final Report"}
@@ -478,7 +480,7 @@ function AccordionSection({ id, name, status, isExpanded, isLocked, onToggle, on
                         {isLocked ? <Lock className="h-5 w-5" /> : <CheckCircle2 className="h-6 w-6" />}
                     </div>
                     <div className="flex items-center gap-4">
-                        <h2 className="text-xl font-extrabold text-zinc-900 tracking-tight">{name}</h2>
+                        <h2 className="text-xl font-extrabold text-foreground tracking-tight">{name}</h2>
                         <div className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border no-print ${isLocked ? 'bg-zinc-50 text-zinc-200 border-zinc-50' :
                                 status === "APPROVED" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
                                     "bg-zinc-100 text-zinc-400 border-zinc-200"
@@ -498,7 +500,7 @@ function AccordionSection({ id, name, status, isExpanded, isLocked, onToggle, on
                                 }}
                                 disabled={running}
                                 variant="outline"
-                                className="bg-zinc-50/50 border-zinc-200 text-zinc-900 font-bold px-4 py-2 h-9 rounded-xl flex items-center gap-2 hover:bg-zinc-100 transition-all active:scale-95 disabled:opacity-50"
+                                className="bg-muted/20 border-border text-foreground font-bold px-4 py-2 h-9 rounded-xl flex items-center gap-2 hover:bg-muted/40 transition-all active:scale-95 disabled:opacity-50"
                             >
                                 {running ? <Clock className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5 fill-current" />}
                                 <span className="text-[12px]">{running ? "Processing..." : "Re-run Analysis"}</span>

@@ -70,19 +70,19 @@ export function Sidebar() {
     };
 
     return (
-        <aside className="w-72 border-r border-zinc-200 bg-white flex flex-col h-full shadow-sm">
+        <aside className="w-72 border-r border-border bg-card flex flex-col h-full shadow-sm transition-colors duration-300">
             {/* Logo */}
             <div className="p-6 flex items-center gap-3">
-                <div className="bg-zinc-900 rounded-lg p-2">
-                    <FileText className="h-6 w-6 text-white" />
+                <div className="bg-primary rounded-lg p-2">
+                    <FileText className="h-6 w-6 text-primary-foreground" />
                 </div>
-                <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">ProtoStruc</h1>
+                <h1 className="text-2xl font-bold text-foreground tracking-tight">ProtoStruc</h1>
             </div>
 
             <div className="px-5 mb-6">
                 <Button 
                     onClick={handleNewProject}
-                    className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-bold py-6 rounded-xl flex items-center justify-center gap-2 text-lg shadow-lg shadow-zinc-200 transition-all active:scale-[0.98]"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-6 rounded-xl flex items-center justify-center gap-2 text-lg shadow-lg transition-all active:scale-[0.98]"
                 >
                     <Plus className="h-5 w-5 stroke-[3px]" />
                     New Project
@@ -92,10 +92,10 @@ export function Sidebar() {
             {/* Recent Projects Section */}
             <div className="flex-1 flex flex-col min-h-0">
                 <div className="px-6 py-2 flex items-center justify-between">
-                    <h3 className="text-[11px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                    <h3 className="text-[11px] font-black text-muted-foreground/60 uppercase tracking-[0.2em]">
                         Recent Projects
                     </h3>
-                    <ChevronUp className="h-4 w-4 text-zinc-300" />
+                    <ChevronUp className="h-4 w-4 text-muted-foreground/40" />
                 </div>
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar px-3 space-y-1 py-2">
@@ -112,22 +112,22 @@ export function Sidebar() {
                                     href={`/phases/all?projectId=${project.id}`}
                                     className={`flex items-start gap-3 p-3 rounded-xl transition-all group ${
                                         isActive 
-                                            ? 'bg-zinc-100' 
-                                            : 'hover:bg-zinc-50'
+                                            ? 'bg-muted/40' 
+                                            : 'hover:bg-muted/20'
                                     }`}
                                 >
                                     <div className={`mt-0.5 p-1.5 rounded-lg transition-colors ${
-                                        isActive ? 'bg-zinc-900 text-white' : 'bg-transparent text-zinc-400 group-hover:text-zinc-600'
+                                        isActive ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground/60 group-hover:text-foreground'
                                     }`}>
                                         <FileText className="h-4 w-4" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className={`text-sm font-bold truncate leading-tight mb-0.5 ${
-                                            isActive ? 'text-zinc-900' : 'text-zinc-600 group-hover:text-zinc-900'
+                                            isActive ? 'text-foreground' : 'text-slate-600 dark:text-slate-400 group-hover:text-foreground'
                                         }`}>
                                             {project.problem_statement || 'Untitled Project'}
                                         </div>
-                                        <div className="text-[10px] font-bold text-zinc-400 tracking-wider">
+                                        <div className="text-[10px] font-bold text-muted-foreground/50 tracking-wider">
                                             {formatDate(project.created_at)}
                                         </div>
                                     </div>
@@ -139,10 +139,10 @@ export function Sidebar() {
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-zinc-100 mt-auto bg-zinc-50/50">
+            <div className="p-4 border-t border-border mt-auto bg-muted/10">
                 <div className="space-y-1">
-                    <Link href="/settings" className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/80 rounded-xl transition-all group border-none bg-transparent cursor-pointer text-left">
-                        <Settings className="h-5 w-5 text-zinc-400 group-hover:text-zinc-900" />
+                    <Link href="/settings" className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-muted/30 rounded-xl transition-all group border-none bg-transparent cursor-pointer text-left">
+                        <Settings className="h-5 w-5 text-muted-foreground group-hover:text-foreground" />
                         Settings
                     </Link>
                     <button 
@@ -152,13 +152,13 @@ export function Sidebar() {
                         <LogOut className="h-5 w-5 text-red-400 group-hover:text-red-600" />
                         Log out
                     </button>
-                    <div className="flex items-center gap-3 px-4 py-3 border-t border-zinc-100 pt-4 mt-2">
-                        <div className="h-9 w-9 rounded-full bg-zinc-900 text-white flex items-center justify-center font-black text-xs shrink-0 shadow-sm border border-zinc-700 uppercase">
+                    <div className="flex items-center gap-3 px-4 py-3 border-t border-border pt-4 mt-2">
+                        <div className="h-9 w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-black text-xs shrink-0 shadow-sm border border-border/20 uppercase">
                             {user?.email?.substring(0, 2) || '??'}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="text-sm font-bold text-zinc-900 truncate">{user?.email || 'N/A'}</div>
-                            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest leading-none mt-0.5">
+                            <div className="text-sm font-bold text-foreground truncate">{user?.email || 'N/A'}</div>
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-0.5">
                                 {user ? 'User' : 'Guest'}
                             </div>
                         </div>

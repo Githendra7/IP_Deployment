@@ -57,7 +57,7 @@ export default function Home() {
 
   return (
     <ProtectedRoute>
-      <div className="flex h-screen bg-[#FDFCFB] text-foreground">
+      <div className="flex h-screen bg-background text-foreground transition-colors duration-300">
         <Suspense fallback={<div className="w-72 border-r border-zinc-200 bg-white h-full" />}>
           <Sidebar />
         </Suspense>

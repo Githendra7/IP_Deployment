@@ -23,12 +23,12 @@ function SettingsContent() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="flex h-screen bg-[#FDFCFB] font-sans">
+    <div className="flex h-screen bg-background font-sans transition-colors duration-300">
       <Sidebar />
       <main className="flex-1 overflow-y-auto p-12">
         <div className="max-w-4xl mx-auto">
           <header className="mb-10">
-            <h1 className="text-4xl font-bold text-zinc-900 mb-2">Settings</h1>
+            <h1 className="text-4xl font-bold text-foreground mb-2 tracking-tight">Settings</h1>
             <p className="text-zinc-500 font-medium">Manage your account and preferences.</p>
           </header>
 
@@ -38,7 +38,7 @@ function SettingsContent() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 pb-4 text-sm font-bold transition-all relative ${
-                  activeTab === tab.id ? "text-zinc-900" : "text-zinc-400 hover:text-zinc-600"
+                  activeTab === tab.id ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <tab.icon className="h-4 w-4" />
@@ -46,7 +46,7 @@ function SettingsContent() {
                 {activeTab === tab.id && (
                   <motion.div 
                     layoutId="activeTab" 
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-900" 
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-foreground" 
                   />
                 )}
               </button>
@@ -58,20 +58,20 @@ function SettingsContent() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="bg-white border border-border rounded-2xl p-8 shadow-sm"
+            className="bg-card border border-border rounded-2xl p-8 shadow-sm transition-all"
           >
             {activeTab === "profile" && (
               <div className="space-y-8">
                 <section>
-                    <h3 className="text-lg font-bold text-zinc-900 mb-4">Appearance</h3>
-                    <div className="flex items-center justify-between p-4 border border-zinc-100 rounded-xl bg-zinc-50/50">
+                    <h3 className="text-lg font-bold text-foreground mb-4">Appearance</h3>
+                    <div className="flex items-center justify-between p-4 border border-border rounded-xl bg-muted/20">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-white rounded-lg shadow-sm">
-                                {theme === 'dark' ? <Moon className="h-4 w-4 text-zinc-900" /> : <Sun className="h-4 w-4 text-zinc-900" />}
+                            <div className="p-2 bg-background rounded-lg shadow-sm">
+                                {theme === 'dark' ? <Moon className="h-4 w-4 text-foreground" /> : <Sun className="h-4 w-4 text-foreground" />}
                             </div>
                             <div>
-                                <h4 className="font-bold text-zinc-900">Dark Mode</h4>
-                                <p className="text-xs text-zinc-500">Switch between light and dark themes</p>
+                                <h4 className="font-bold text-foreground">Dark Mode</h4>
+                                <p className="text-xs text-muted-foreground">Switch between light and dark themes</p>
                             </div>
                         </div>
                         <Switch 
@@ -83,7 +83,7 @@ function SettingsContent() {
                 
                 <div className="pt-4 flex justify-end">
                   <Button 
-                    className="bg-zinc-900 hover:bg-zinc-800 text-white font-bold px-8 h-12 rounded-xl flex items-center gap-2"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 h-12 rounded-xl flex items-center gap-2 shadow-sm"
                     onClick={() => toast.success("Preferences saved successfully!")}
                   >
                     <Save className="h-4 w-4" />
