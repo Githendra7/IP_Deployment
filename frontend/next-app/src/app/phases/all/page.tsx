@@ -146,7 +146,7 @@ function PhasesContent() {
 
             const imgData = await toPng(reportRef.current, {
                 quality: 1,
-                backgroundColor: '#FDFCFB',
+                backgroundColor: '#ffffff', // Force white background for the PDF report
                 pixelRatio: 2,
                 filter: filter
             });
@@ -154,7 +154,6 @@ function PhasesContent() {
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
-            
             const imgProps = pdf.getImageProperties(imgData);
             const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
             
@@ -165,10 +164,13 @@ function PhasesContent() {
             pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
             heightLeft -= pdfHeight;
 
-            // Add subsequent pages if the content is longer than one page
+            // Add subsequent pages
             while (heightLeft > 0) {
                 position = heightLeft - imgHeight;
                 pdf.addPage();
+                // Add a small white rectangle at the top to cover edge artifacts (like the black line)
+                pdf.setFillColor(255, 255, 255);
+                pdf.rect(0, 0, pdfWidth, 2, 'F');
                 pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
                 heightLeft -= pdfHeight;
             }
@@ -208,11 +210,11 @@ function PhasesContent() {
     if (!projectId) {
         return (
             <div className="flex flex-col items-center justify-center h-[80vh] text-center p-12">
-                <div className="w-20 h-20 bg-zinc-50 rounded-full flex items-center justify-center mb-8 border border-zinc-100 shadow-sm">
-                    <Layers className="w-10 h-10 text-zinc-300" />
+                <div className="w-20 h-20 bg-muted/20 rounded-full flex items-center justify-center mb-8 border border-border shadow-sm">
+                    <Layers className="w-10 h-10 text-muted-foreground/40" />
                 </div>
-                <h1 className="text-2xl font-bold text-zinc-900 mb-2">No Project Selected</h1>
-                <p className="max-w-md text-zinc-500 text-lg">
+                <h1 className="text-2xl font-bold text-foreground mb-2">No Project Selected</h1>
+                <p className="max-w-md text-muted-foreground text-lg">
                     Select a project from the sidebar to view its decomposition phases.
                 </p>
             </div>
@@ -237,10 +239,10 @@ function PhasesContent() {
                         animate={{ opacity: 1, y: 0 }}
                         className="bg-card p-6 rounded-3xl border border-border shadow-sm"
                     >
-                        <div className="text-[11px] font-black text-zinc-400 uppercase tracking-widest mb-4">Status</div>
+                        <div className="text-[11px] font-black text-muted-foreground/40 uppercase tracking-widest mb-4">Status</div>
                         <div className="flex items-center gap-3">
                             <div className={`h-2 w-2 rounded-full ${isAllGenerated ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`} />
-                            <span className="text-lg font-bold text-zinc-900">
+                            <span className="text-lg font-bold text-foreground">
                                 {isAllGenerated ? "Verified" : "Under Analysis"}
                             </span>
                         </div>
@@ -250,11 +252,11 @@ function PhasesContent() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm"
+                        className="bg-card p-6 rounded-3xl border border-border shadow-sm"
                     >
-                        <div className="text-[11px] font-black text-zinc-400 uppercase tracking-widest mb-4">Milestones</div>
+                        <div className="text-[11px] font-black text-muted-foreground/40 uppercase tracking-widest mb-4">Milestones</div>
                         <div className="flex items-center gap-3">
-                            <span className="text-lg font-bold text-zinc-900">
+                            <span className="text-lg font-bold text-foreground">
                                 {[p1Data, p2Data, p3Data].filter(Boolean).length}/3 Completed
                             </span>
                         </div>
@@ -264,9 +266,9 @@ function PhasesContent() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm"
+                        className="bg-card p-6 rounded-3xl border border-border shadow-sm"
                     >
-                        <div className="text-[11px] font-black text-zinc-400 uppercase tracking-widest mb-4">Created</div>
+                        <div className="text-[11px] font-black text-muted-foreground/40 uppercase tracking-widest mb-4">Created</div>
                         <div className="flex items-center gap-3">
                             <span className="text-lg font-bold text-foreground">{project ? formatDate(project.created_at) : "--/--/----"}</span>
                         </div>
@@ -293,17 +295,17 @@ function PhasesContent() {
                                     <div className="text-center">#</div>
                                     <div>Functional Requirement</div>
                                 </div>
-                                <div className="divide-y divide-zinc-50">
+                                <div className="divide-y divide-border/50">
                                     {p1Data.map((item: any, i: number) => (
                                         <div key={i} className="grid grid-cols-[80px_1fr] py-6 group">
-                                            <div className="text-center text-zinc-300 font-bold">{i + 1}</div>
+                                            <div className="text-center text-muted-foreground/30 font-bold">{i + 1}</div>
                                             <div>
                                                 <h4 className="font-bold text-foreground mb-2">{item.function || item.title}</h4>
                                                 {(item.sub_functions || item.children) && (
-                                                    <div className="pl-4 border-l-2 border-zinc-100 space-y-1">
+                                                    <div className="pl-4 border-l-2 border-border/40 space-y-1">
                                                         {(item.sub_functions || item.children).map((c: any, ci: number) => (
-                                                            <div key={ci} className="text-sm text-zinc-500 flex items-center gap-2">
-                                                                <div className="h-1 w-1 rounded-full bg-zinc-300" />
+                                                            <div key={ci} className="text-sm text-muted-foreground flex items-center gap-2">
+                                                                <div className="h-1 w-1 rounded-full bg-muted-foreground/30" />
                                                                 {c.function || c.title}
                                                             </div>
                                                         ))}
@@ -330,14 +332,14 @@ function PhasesContent() {
                         idx={1}
                     >
                         {p2Data ? (
-                            <div className="divide-y divide-zinc-100">
+                            <div className="divide-y divide-border/30">
                                 {p2Data.map((item: any, index: number) => (
                                     <div key={index} className="grid grid-cols-1 md:grid-cols-[240px_1fr] py-8 gap-8">
                                         <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
+                                            <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
                                                 <Lightbulb className="h-5 w-5" />
                                             </div>
-                                            <h4 className="font-bold text-zinc-900">{item.function || `Block ${index + 1}`}</h4>
+                                            <h4 className="font-bold text-foreground">{item.function || `Block ${index + 1}`}</h4>
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {(item.solutions || item.options || []).map((sol: any, sIdx: number) => (
@@ -370,7 +372,7 @@ function PhasesContent() {
                         {p3Data ? (
                             <div className="space-y-6 overflow-x-auto">
                                 <div className="min-w-[1240px]">
-                                    <div className="grid grid-cols-[140px_160px_1fr_1fr_1fr_1fr_1.5fr] text-[10px] font-bold uppercase tracking-widest text-zinc-400 border-b border-zinc-100 pb-4 mb-4 px-2">
+                                    <div className="grid grid-cols-[140px_160px_1fr_1fr_1fr_1fr_1.5fr] text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 border-b border-border pb-4 mb-4 px-2">
                                         <div>Function</div>
                                         <div>Alternative</div>
                                         <div>Strength</div>
@@ -403,22 +405,22 @@ function PhasesContent() {
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.6 }}
-                            className="bg-white rounded-[2rem] border border-zinc-100 overflow-hidden shadow-sm no-print"
+                            className="bg-card rounded-[2rem] border border-border overflow-hidden shadow-sm no-print"
                         >
                             <div className="p-12 flex flex-col items-center text-center">
-                                <div className="h-16 w-16 rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center mb-6 text-zinc-400 font-bold text-xl">
+                                <div className="h-16 w-16 rounded-full bg-muted/10 border border-border flex items-center justify-center mb-6 text-muted-foreground/60 font-bold text-xl">
                                     4
                                 </div>
-                                <h2 className="text-2xl font-extrabold text-zinc-900 mb-8">Final Design Report</h2>
+                                <h2 className="text-2xl font-extrabold text-foreground mb-8">Final Design Report</h2>
 
-                                <div className="w-full max-w-4xl p-12 rounded-[2rem] border-2 border-dashed border-zinc-100 bg-zinc-50/30 flex flex-col items-center">
-                                    <FileText className="h-10 w-10 text-zinc-300 mb-4" />
-                                    <p className="text-zinc-500 font-medium mb-8">
+                                <div className="w-full max-w-4xl p-12 rounded-[2rem] border-2 border-dashed border-border/30 bg-muted/5 flex flex-col items-center">
+                                    <FileText className="h-10 w-10 text-muted-foreground/20 mb-4" />
+                                    <p className="text-muted-foreground font-medium mb-8">
                                         Complete all design phases above to generate the final engineering report.
                                     </p>
                                     <Button
                                         disabled={true}
-                                        className="bg-zinc-900/50 cursor-not-allowed text-white font-bold px-8 py-6 rounded-xl flex items-center gap-3 shadow-lg"
+                                        className="bg-primary/20 cursor-not-allowed text-primary-foreground/50 font-bold px-8 py-6 rounded-xl flex items-center gap-3 shadow-lg"
                                     >
                                         <Lock className="h-4 w-4" />
                                         Generate PDF Report
@@ -427,19 +429,19 @@ function PhasesContent() {
                             </div>
                         </motion.div>
                     ) : (
-                        <motion.div
+                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="bg-white rounded-[2rem] border border-zinc-100 overflow-hidden shadow-xl mt-8 no-print"
+                            className="bg-card rounded-[2rem] border border-border overflow-hidden shadow-xl mt-8 no-print"
                         >
                             <div className="p-12 flex flex-col items-center text-center">
-                                <h2 className="text-3xl font-extrabold text-zinc-900 mb-6 tracking-tight">Final Report</h2>
-                                <p className="text-zinc-500 max-w-xl mx-auto mb-10 font-medium">
+                                <h2 className="text-3xl font-extrabold text-foreground mb-6 tracking-tight">Final Report</h2>
+                                <p className="text-muted-foreground max-w-xl mx-auto mb-10 font-medium">
                                     Your comprehensive engineering dossier has been compiled and is ready for high-fidelity export.
                                 </p>
 
-                                <div className="w-full max-w-4xl p-12 rounded-[2rem] border-2 border-dashed border-zinc-100 bg-zinc-50/20 flex flex-col items-center transition-all hover:bg-zinc-50/50">
-                                    <FileText className="h-12 w-12 text-zinc-300 mb-6" />
+                                <div className="w-full max-w-4xl p-12 rounded-[2rem] border-2 border-dashed border-border/30 bg-muted/5 flex flex-col items-center transition-all hover:bg-muted/10">
+                                    <FileText className="h-12 w-12 text-muted-foreground/20 mb-6" />
                                     <Button
                                         onClick={handleDownloadReport}
                                         disabled={downloading}
@@ -464,7 +466,7 @@ function AccordionSection({ id, name, status, isExpanded, isLocked, onToggle, on
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 + (idx * 0.1) }}
-            className={`bg-white rounded-[2rem] border overflow-hidden shadow-sm transition-all duration-300 ${isLocked ? 'border-zinc-50 opacity-40 grayscale pointer-events-none' : 'border-zinc-100 hover:shadow-md'
+            className={`bg-card rounded-[2rem] border overflow-hidden shadow-sm transition-all duration-300 ${isLocked ? 'border-border/20 opacity-40 grayscale pointer-events-none' : 'border-border hover:shadow-md'
                 }`}
         >
             <div className="w-full px-8 py-7 flex items-center justify-between group">
@@ -473,17 +475,17 @@ function AccordionSection({ id, name, status, isExpanded, isLocked, onToggle, on
                     disabled={isLocked}
                     className="flex-1 flex items-center gap-6 text-left"
                 >
-                    <div className={`h-12 w-12 rounded-2xl flex items-center justify-center border transition-colors ${isLocked ? 'bg-zinc-50 text-zinc-200 border-zinc-50' :
-                            status === "APPROVED" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-                                "bg-zinc-50 text-zinc-300 border-zinc-100"
+                    <div className={`h-12 w-12 rounded-2xl flex items-center justify-center border transition-colors ${isLocked ? 'bg-muted/10 text-muted-foreground/20 border-border/20' :
+                            status === "APPROVED" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" :
+                                "bg-muted/10 text-muted-foreground/30 border-border"
                         }`}>
                         {isLocked ? <Lock className="h-5 w-5" /> : <CheckCircle2 className="h-6 w-6" />}
                     </div>
                     <div className="flex items-center gap-4">
                         <h2 className="text-xl font-extrabold text-foreground tracking-tight">{name}</h2>
-                        <div className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border no-print ${isLocked ? 'bg-zinc-50 text-zinc-200 border-zinc-50' :
-                                status === "APPROVED" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-                                    "bg-zinc-100 text-zinc-400 border-zinc-200"
+                        <div className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border no-print ${isLocked ? 'bg-muted/10 text-muted-foreground/20 border-border/20' :
+                                status === "APPROVED" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" :
+                                    "bg-muted/20 text-muted-foreground/40 border-border/50"
                             }`}>
                             {status}
                         </div>
@@ -507,7 +509,7 @@ function AccordionSection({ id, name, status, isExpanded, isLocked, onToggle, on
                             </Button>
                         )}
                         <button onClick={onToggle}>
-                            <ChevronDown className={`h-5 w-5 text-zinc-400 transition-transform duration-500 ${isExpanded ? 'rotate-180' : ''}`} />
+                            <ChevronDown className={`h-5 w-5 text-muted-foreground/40 transition-transform duration-500 ${isExpanded ? 'rotate-180' : ''}`} />
                         </button>
                     </div>
                 )}
@@ -521,7 +523,7 @@ function AccordionSection({ id, name, status, isExpanded, isLocked, onToggle, on
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.4, ease: "easeInOut" }}
                     >
-                        <div className="px-8 pb-10 pt-2 border-t border-zinc-50">
+                        <div className="px-8 pb-10 pt-2 border-t border-border/30">
                             {children}
                         </div>
                     </motion.div>
@@ -535,17 +537,17 @@ function AccordionSection({ id, name, status, isExpanded, isLocked, onToggle, on
 function NoDataPlaceholder({ onGenerate, loading }: any) {
     return (
         <div className="py-20 flex flex-col items-center text-center">
-            <div className="h-16 w-16 bg-zinc-50 rounded-full flex items-center justify-center mb-6 border border-zinc-100 text-zinc-300">
+            <div className="h-16 w-16 bg-muted/10 rounded-full flex items-center justify-center mb-6 border border-border text-muted-foreground/20">
                 <AlertCircle className="h-8 w-8" />
             </div>
-            <h3 className="text-lg font-bold text-zinc-900 mb-2">No data generated yet</h3>
-            <p className="text-zinc-500 text-sm max-w-xs mb-8">
+            <h3 className="text-lg font-bold text-foreground mb-2">No data generated yet</h3>
+            <p className="text-muted-foreground text-sm max-w-xs mb-8">
                 Initiate the unified analysis to populate this section with engineering data.
             </p>
             <Button
                 onClick={onGenerate}
                 disabled={loading}
-                className="bg-zinc-900 text-white rounded-xl px-8 h-12 font-bold gap-2"
+                className="bg-primary text-primary-foreground rounded-xl px-8 h-12 font-bold gap-2"
             >
                 {loading ? <Clock className="h-4 w-4 animate-spin" /> : <Target className="h-4 w-4" />}
                 {loading ? "Generating..." : "Initiate Full Analysis"}
@@ -557,7 +559,7 @@ function NoDataPlaceholder({ onGenerate, loading }: any) {
 export default function AllPhasesPage() {
     return (
         <Suspense fallback={
-            <div className="flex items-center justify-center h-screen bg-[#FDFCFB]">
+            <div className="flex items-center justify-center h-screen bg-background text-foreground">
                 <div className="flex flex-col items-center">
                     <div className="relative w-16 h-16 mb-6">
                         <motion.div className="absolute inset-0 border-4 border-zinc-100 rounded-full" />
